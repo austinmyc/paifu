@@ -22,7 +22,7 @@ export default async function CollectionPage({
   let query = supabase
     .from("user_collections")
     .select("quantity_owned, want, cards(card_id, name, image_url, collector_number, expansion_code, expansion_name, type, stage)")
-    .eq("user_id", user.id)
+    .eq("user_id", user!.id)
 
   if (filter === "owned") query = query.gt("quantity_owned", 0)
   if (filter === "want") query = query.eq("want", true)

@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useTransition } from "react"
+import { useState, useEffect } from "react"
 import { createClient } from "@/lib/supabase/client"
 import { Button } from "@/components/ui/button"
 import { toast } from "sonner"
@@ -11,33 +11,60 @@ interface Props {
   initialWant: boolean
 }
 
+function lsKey(cardId: string) {
+  return `paifu:col:${cardId}`
+}
+
+function readCache(cardId: string): { qty: number; want: boolean } | null {
+  try {
+    const raw = localStorage.getItem(lsKey(cardId))
+    if (raw) return JSON.parse(raw)
+  } catch {}
+  return null
+}
+
+function writeCache(cardId: string, qty: number, want: boolean) {
+  try {
+    localStorage.setItem(lsKey(cardId), JSON.stringify({ qty, want }))
+  } catch {}
+}
+
+async function syncToSupabase(cardId: string, quantity: number, want: boolean) {
+  const supabase = createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return
+  const { error } = await supabase.from("user_collections").upsert(
+    { user_id: user.id, card_id: cardId, quantity_owned: quantity, want },
+    { onConflict: "user_id,card_id" }
+  )
+  if (error) toast.error("更新失敗")
+}
+
 export function CollectionControls({ cardId, initialQuantity, initialWant }: Props) {
-  const [qty, setQty] = useState(initialQuantity)
-  const [want, setWant] = useState(initialWant)
-  const [pending, startTransition] = useTransition()
+  const cached = readCache(cardId)
+  const [qty, setQty] = useState(cached?.qty ?? initialQuantity)
+  const [want, setWant] = useState(cached?.want ?? initialWant)
 
-  async function upsert(quantity: number, wantVal: boolean) {
-    const supabase = createClient()
-    const { data: { user } } = await supabase.auth.getUser()
-    if (!user) return
-
-    const { error } = await supabase.from("user_collections").upsert(
-      { user_id: user.id, card_id: cardId, quantity_owned: quantity, want: wantVal },
-      { onConflict: "user_id,card_id" }
-    )
-    if (error) toast.error("更新失敗")
-  }
+  useEffect(() => {
+    const cached = readCache(cardId)
+    if (cached) {
+      setQty(cached.qty)
+      setWant(cached.want)
+    }
+  }, [cardId])
 
   function changeQty(delta: number) {
     const next = Math.max(0, qty + delta)
     setQty(next)
-    startTransition(() => upsert(next, want))
+    writeCache(cardId, next, want)
+    syncToSupabase(cardId, next, want)
   }
 
   function toggleWant() {
     const next = !want
     setWant(next)
-    startTransition(() => upsert(qty, next))
+    writeCache(cardId, qty, next)
+    syncToSupabase(cardId, qty, next)
   }
 
   return (
@@ -45,16 +72,15 @@ export function CollectionControls({ cardId, initialQuantity, initialWant }: Pro
       <div className="flex items-center gap-3">
         <span className="text-sm font-medium">持有數量</span>
         <div className="flex items-center gap-2">
-          <Button size="sm" variant="outline" onClick={() => changeQty(-1)} disabled={pending || qty === 0}>−</Button>
+          <Button size="sm" variant="outline" onClick={() => changeQty(-1)} disabled={qty === 0}>−</Button>
           <span className="w-6 text-center font-mono">{qty}</span>
-          <Button size="sm" variant="outline" onClick={() => changeQty(1)} disabled={pending}>+</Button>
+          <Button size="sm" variant="outline" onClick={() => changeQty(1)}>+</Button>
         </div>
       </div>
       <Button
         variant={want ? "default" : "outline"}
         size="sm"
         onClick={toggleWant}
-        disabled={pending}
         className="w-full"
       >
         {want ? "✓ 已加入願望清單" : "加入願望清單"}

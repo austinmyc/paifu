@@ -1,27 +1,24 @@
 export const dynamic = "force-dynamic"
 import { createClient } from "@/lib/supabase/server"
 import { Nav } from "@/components/nav"
-import Link from "next/link"
 import { Badge } from "@/components/ui/badge"
 import { notFound } from "next/navigation"
+import { CardGrid } from "@/components/card-grid"
 
 export default async function SetPage({ params }: { params: Promise<{ code: string }> }) {
   const { code } = await params
   const supabase = await createClient()
 
-  const { data: expansion } = await supabase
-    .from("expansions")
-    .select("*")
-    .eq("code", code)
-    .single()
+  const [{ data: expansion }, { data: cards }, { data: { user } }] = await Promise.all([
+    supabase.from("expansions").select("*").eq("code", code).single(),
+    supabase.from("cards")
+      .select("card_id, name, stage, type, collector_number, image_url, dex_number")
+      .eq("expansion_code", code)
+      .order("collector_number", { ascending: true }),
+    supabase.auth.getUser(),
+  ])
 
   if (!expansion) notFound()
-
-  const { data: cards } = await supabase
-    .from("cards")
-    .select("card_id, name, stage, type, collector_number, image_url, dex_number")
-    .eq("expansion_code", code)
-    .order("collector_number", { ascending: true })
 
   return (
     <>
@@ -40,29 +37,7 @@ export default async function SetPage({ params }: { params: Promise<{ code: stri
           </div>
         </div>
 
-        <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-3">
-          {cards?.map(card => (
-            <Link key={card.card_id} href={`/card/${card.card_id}`} className="group">
-              <div className="rounded-lg overflow-hidden border bg-card hover:shadow-md transition-shadow">
-                {card.image_url ? (
-                  <img
-                    src={card.image_url}
-                    alt={card.name}
-                    className="w-full aspect-[2.5/3.5] object-cover"
-                  />
-                ) : (
-                  <div className="w-full aspect-[2.5/3.5] bg-muted flex items-center justify-center text-xs text-muted-foreground">
-                    {card.name}
-                  </div>
-                )}
-                <div className="p-1.5">
-                  <p className="text-xs font-medium truncate">{card.name}</p>
-                  <p className="text-xs text-muted-foreground">{card.collector_number}</p>
-                </div>
-              </div>
-            </Link>
-          ))}
-        </div>
+        <CardGrid cards={cards ?? []} isLoggedIn={!!user} />
       </main>
     </>
   )
