@@ -3,6 +3,7 @@ import { createClient } from "@/lib/supabase/server"
 import { Nav } from "@/components/nav"
 import Link from "next/link"
 import { EXPANSION_PACK_IMAGE, EXPANSION_REGULATION } from "@/lib/expansion-images"
+import { PageLoader } from "@/components/page-loader"
 
 export default async function SetsPage() {
   const supabase = await createClient()
@@ -15,7 +16,7 @@ export default async function SetsPage() {
   return (
     <>
       <Nav />
-      <main className="max-w-3xl mx-auto px-4 py-8">
+      <PageLoader><main className="max-w-3xl mx-auto px-4 py-8">
         
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           {expansions?.map(exp => {
@@ -79,7 +80,7 @@ export default async function SetsPage() {
             )
           })}
         </div>
-      </main>
+      </main></PageLoader>
     </>
   )
 }

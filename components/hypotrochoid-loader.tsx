@@ -10,8 +10,8 @@ interface Props {
 const CONFIG = {
   particleCount: 82,
   trailSpan: 0.46,
-  durationMs: 7600,
-  pulseDurationMs: 6200,
+  durationMs: 3200,
+  pulseDurationMs: 2800,
   strokeWidth: 4.6,
   spiroR: 8.2,
   spiror: 2.7,

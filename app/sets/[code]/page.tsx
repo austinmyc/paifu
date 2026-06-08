@@ -4,6 +4,7 @@ import { Nav } from "@/components/nav"
 import { notFound } from "next/navigation"
 import { CardGrid } from "@/components/card-grid"
 import { EXPANSION_PACK_IMAGE, EXPANSION_REGULATION } from "@/lib/expansion-images"
+import { PageLoader } from "@/components/page-loader"
 
 export default async function SetPage({ params }: { params: Promise<{ code: string }> }) {
   const { code } = await params
@@ -26,7 +27,7 @@ export default async function SetPage({ params }: { params: Promise<{ code: stri
   return (
     <>
       <Nav />
-      <main className="max-w-5xl mx-auto px-4 py-8">
+      <PageLoader><main className="max-w-5xl mx-auto px-4 py-8">
         {/* Page header */}
         <div className="flex items-center gap-4 mb-8">
           {/* Pack image thumbnail */}
@@ -56,7 +57,7 @@ export default async function SetPage({ params }: { params: Promise<{ code: stri
         </div>
 
         <CardGrid cards={cards ?? []} isLoggedIn={!!user} />
-      </main>
+      </main></PageLoader>
     </>
   )
 }

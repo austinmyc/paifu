@@ -264,7 +264,7 @@ export function CardGrid({ cards, isLoggedIn }: Props) {
               <img
                 src={card.image_url}
                 alt={card.name}
-                loading="lazy"
+                loading="eager"
                 className="w-full aspect-[2.5/3.5] object-cover"
               />
             ) : (
