@@ -1,11 +1,12 @@
 "use client"
 
-import { useState, useCallback, useRef } from "react"
+import { useState, useCallback, useRef, useEffect } from "react"
 import { createClient } from "@/lib/supabase/client"
 import { Sheet } from "@/components/ui/sheet"
 import { CollectionControls } from "@/components/collection-controls"
 import { Badge } from "@/components/ui/badge"
 import Link from "next/link"
+import { HypotrochoidLoader } from "@/components/hypotrochoid-loader"
 
 interface CardSummary {
   card_id: string
@@ -148,6 +149,33 @@ export function CardGrid({ cards, isLoggedIn }: Props) {
     return result
   })
   const loadedQtys = useRef<Set<string>>(new Set(cards.map(c => c.card_id)))
+
+  // Background sync: pull Supabase collection for this page's cards on mount
+  useEffect(() => {
+    if (!isLoggedIn) return
+    const cardIds = cards.map(c => c.card_id)
+    if (cardIds.length === 0) return
+    const supabase = createClient()
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      if (!user) return
+      supabase
+        .from("user_collections")
+        .select("card_id, quantity_owned, want")
+        .eq("user_id", user.id)
+        .in("card_id", cardIds)
+        .then(({ data }) => {
+          if (!data) return
+          const updates: Record<string, number> = {}
+          for (const row of data) {
+            lsWrite(row.card_id, row.quantity_owned, row.want)
+            if (row.quantity_owned > 0) updates[row.card_id] = row.quantity_owned
+          }
+          if (Object.keys(updates).length > 0) {
+            setQtys(prev => ({ ...prev, ...updates }))
+          }
+        })
+    })
+  }, [isLoggedIn]) // eslint-disable-line react-hooks/exhaustive-deps
 
   function ensureQtyLoaded(cardId: string) {
     if (loadedQtys.current.has(cardId)) return
@@ -296,7 +324,9 @@ export function CardGrid({ cards, isLoggedIn }: Props) {
           </div>
 
           {loading && !detail && (
-            <div className="flex items-center justify-center flex-1 text-muted-foreground text-sm">載入中…</div>
+            <div className="flex items-center justify-center flex-1">
+              <HypotrochoidLoader size={96} color="#f5c842" />
+            </div>
           )}
 
           {detail && (
