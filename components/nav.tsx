@@ -5,7 +5,7 @@ import { usePathname } from "next/navigation"
 import { createClient } from "@/lib/supabase/client"
 
 const links = [
-  { href: "/sets", label: "牌組" },
+  { href: "/sets", label: "卡牌" },
   { href: "/collection", label: "我的收藏" },
 ]
 

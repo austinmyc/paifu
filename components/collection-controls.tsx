@@ -68,22 +68,21 @@ export function CollectionControls({ cardId, initialQuantity, initialWant }: Pro
   }
 
   return (
-    <div className="space-y-3">
-      <div className="flex items-center gap-3">
-        <span className="text-sm font-medium">持有數量</span>
-        <div className="flex items-center gap-2">
-          <Button size="sm" variant="outline" onClick={() => changeQty(-1)} disabled={qty === 0}>−</Button>
-          <span className="w-6 text-center font-mono">{qty}</span>
-          <Button size="sm" variant="outline" onClick={() => changeQty(1)}>+</Button>
-        </div>
+    <div className="flex items-center gap-2">
+      {/* Quantity */}
+      <div className="flex items-center gap-1.5">
+        <Button size="sm" variant="outline" onClick={() => changeQty(-1)} disabled={qty === 0} className="h-7 w-7 p-0">−</Button>
+        <span className="w-6 text-center font-mono text-sm">{qty}</span>
+        <Button size="sm" variant="outline" onClick={() => changeQty(1)} className="h-7 w-7 p-0">+</Button>
       </div>
+      {/* Wishlist */}
       <Button
         variant={want ? "default" : "outline"}
         size="sm"
         onClick={toggleWant}
-        className="w-full"
+        className="flex-1 h-7 text-xs"
       >
-        {want ? "✓ 已加入願望清單" : "加入願望清單"}
+        {want ? "✓ 願望清單" : "加入願望清單"}
       </Button>
     </div>
   )

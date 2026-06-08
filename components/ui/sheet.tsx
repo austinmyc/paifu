@@ -33,7 +33,7 @@ export function Sheet({ open, onClose, children, className }: SheetProps) {
       {/* Panel */}
       <div
         className={cn(
-          "fixed inset-y-0 right-0 z-50 w-full max-w-md bg-background shadow-xl",
+          "fixed inset-y-0 right-0 z-50 w-full max-w-3xl bg-background shadow-xl",
           "transform transition-transform duration-300 ease-in-out",
           "overflow-y-auto",
           open ? "translate-x-0" : "translate-x-full",

@@ -16,10 +16,7 @@ export default async function SetsPage() {
     <>
       <Nav />
       <main className="max-w-3xl mx-auto px-4 py-8">
-        <h1 className="text-2xl font-bold mb-6" style={{ color: "#1a3a6e" }}>所有牌組</h1>
-        {!expansions?.length && (
-          <p className="text-muted-foreground">尚未載入任何牌組。請先執行爬蟲腳本。</p>
-        )}
+        
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           {expansions?.map(exp => {
             const packImage = EXPANSION_PACK_IMAGE[exp.code]
