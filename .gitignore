@@ -41,6 +41,7 @@ yarn-error.log*
 next-env.d.ts
 
 # AI agent context files (personal/machine-specific)
+.claude/
 CLAUDE.md
 AGENTS.md
 
