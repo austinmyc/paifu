@@ -10,10 +10,10 @@ const geistSans = Geist({
 
 export const metadata: Metadata = {
   title: "PaiFu 牌庫 — 寶可夢卡牌收藏",
-  description: "香港寶可夢集換式卡牌收藏追蹤",
+  description: "繁中寶可夢集換式卡牌收藏追蹤",
   openGraph: {
     title: "PaiFu 牌庫 — 寶可夢卡牌收藏",
-    description: "香港寶可夢集換式卡牌收藏追蹤",
+    description: "繁中寶可夢集換式卡牌收藏追蹤",
     url: "https://paifu.vercel.app",
     siteName: "PaiFu 牌庫",
     locale: "zh_HK",
