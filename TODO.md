@@ -2,7 +2,7 @@
 
 ## Up Next
 - [ ] Export wishlist — let users download/share their wishlist (CSV, image, or shareable link)
-- [ ] Personal stats — % of each set completed, total cards owned, rarest cards in collection
+- [x] Personal stats — % of each set completed
 - [x] UI for viewing cards (perhaps a side view instead of new page)
 - [x] Local Storage optimization for images
 - [ ] Evolution chain view
