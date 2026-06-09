@@ -136,9 +136,10 @@ interface Props {
   cards: CardSummary[]
   isLoggedIn: boolean
   onWantChange?: (cardId: string, want: boolean) => void
+  onQtyChange?: (cardId: string, qty: number) => void
 }
 
-export function CardGrid({ cards, isLoggedIn, onWantChange }: Props) {
+export function CardGrid({ cards, isLoggedIn, onWantChange, onQtyChange }: Props) {
   // qty + want maps keyed by card_id — always empty on server, populated client-side
   const [qtys, setQtys] = useState<Record<string, number>>({})
   const [wants, setWants] = useState<Record<string, boolean>>({})
@@ -217,6 +218,7 @@ export function CardGrid({ cards, isLoggedIn, onWantChange }: Props) {
     const want = lsRead(cardId)?.want ?? false
     lsWrite(cardId, next, want)
     bgUpsert(cardId, next, want)
+    onQtyChange?.(cardId, next)
   }
 
   const [open, setOpen] = useState(false)
