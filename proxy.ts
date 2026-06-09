@@ -33,7 +33,8 @@ export async function proxy(request: NextRequest) {
 
   const isAuthPage = pathname.startsWith("/login")
   const isCallback = pathname.startsWith("/auth/callback")
-  const isProtected = !isAuthPage && !isCallback && !pathname.startsWith("/_next") && !pathname.startsWith("/api/auth")
+  const isPublic = pathname.startsWith("/paidle")
+  const isProtected = !isAuthPage && !isCallback && !isPublic && !pathname.startsWith("/_next") && !pathname.startsWith("/api/auth")
 
   if (isProtected && !user) {
     const url = request.nextUrl.clone()

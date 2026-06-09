@@ -2,17 +2,34 @@
 
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { createClient } from "@/lib/supabase/client"
 
-const links = [
+const authedLinks = [
   { href: "/sets", label: "卡牌" },
   { href: "/wishlist", label: "願望清單" },
+  { href: "/paidle", label: "Paidle" },
+]
+
+const publicLinks = [
+  { href: "/paidle", label: "Paidle" },
 ]
 
 export function Nav() {
   const pathname = usePathname()
   const [menuOpen, setMenuOpen] = useState(false)
+  const [loggedIn, setLoggedIn] = useState<boolean | null>(null)
+
+  useEffect(() => {
+    const client = createClient()
+    client.auth.getSession().then(({ data }) => setLoggedIn(!!data.session))
+    const { data: { subscription } } = client.auth.onAuthStateChange((_, session) => {
+      setLoggedIn(!!session)
+    })
+    return () => subscription.unsubscribe()
+  }, [])
+
+  const links = loggedIn ? authedLinks : publicLinks
 
   function signOut() {
     createClient().auth.signOut().then(() => (window.location.href = "/login"))
@@ -80,16 +97,26 @@ export function Nav() {
                 </Link>
               )
             })}
-            {process.env.NEXT_PUBLIC_SELF_HOSTED !== "true" && (
-              <button
-                onClick={signOut}
-                className="text-sm px-3 py-1.5 rounded-lg transition-colors ml-1"
-                style={{ color: "rgba(255,255,255,0.35)", background: "transparent", border: "none", cursor: "pointer" }}
-                onMouseEnter={e => (e.currentTarget.style.color = "rgba(255,255,255,0.7)")}
-                onMouseLeave={e => (e.currentTarget.style.color = "rgba(255,255,255,0.35)")}
-              >
-                登出
-              </button>
+            {process.env.NEXT_PUBLIC_SELF_HOSTED !== "true" && loggedIn !== null && (
+              loggedIn ? (
+                <button
+                  onClick={signOut}
+                  className="text-sm px-3 py-1.5 rounded-lg transition-colors ml-1"
+                  style={{ color: "rgba(255,255,255,0.35)", background: "transparent", border: "none", cursor: "pointer" }}
+                  onMouseEnter={e => (e.currentTarget.style.color = "rgba(255,255,255,0.7)")}
+                  onMouseLeave={e => (e.currentTarget.style.color = "rgba(255,255,255,0.35)")}
+                >
+                  登出
+                </button>
+              ) : (
+                <Link
+                  href="/login"
+                  className="text-sm px-3 py-1.5 rounded-lg transition-colors ml-1"
+                  style={{ color: "rgba(255,255,255,0.35)" }}
+                >
+                  登入
+                </Link>
+              )
             )}
           </nav>
 
@@ -130,14 +157,25 @@ export function Nav() {
                 </Link>
               )
             })}
-            {process.env.NEXT_PUBLIC_SELF_HOSTED !== "true" && (
-              <button
-                onClick={signOut}
-                className="text-sm px-6 py-3 text-left"
-                style={{ color: "rgba(255,255,255,0.35)", background: "transparent", border: "none", cursor: "pointer" }}
-              >
-                登出
-              </button>
+            {process.env.NEXT_PUBLIC_SELF_HOSTED !== "true" && loggedIn !== null && (
+              loggedIn ? (
+                <button
+                  onClick={signOut}
+                  className="text-sm px-6 py-3 text-left"
+                  style={{ color: "rgba(255,255,255,0.35)", background: "transparent", border: "none", cursor: "pointer" }}
+                >
+                  登出
+                </button>
+              ) : (
+                <Link
+                  href="/login"
+                  onClick={() => setMenuOpen(false)}
+                  className="text-sm px-6 py-3"
+                  style={{ color: "rgba(255,255,255,0.35)" }}
+                >
+                  登入
+                </Link>
+              )
             )}
           </div>
         )}
