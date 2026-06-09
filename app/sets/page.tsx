@@ -10,7 +10,7 @@ export default async function SetsPage() {
 
   const { data: expansions } = await supabase
     .from("expansions")
-    .select("*, cards(count)")
+    .select("code, name, symbol_url, cards(count)")
     .order("code", { ascending: true })
 
   return (
@@ -21,7 +21,7 @@ export default async function SetsPage() {
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           {expansions?.map(exp => {
             const packImage = EXPANSION_PACK_IMAGE[exp.code]
-            const regulation = EXPANSION_REGULATION[exp.code] ?? exp.regulation_mark
+            const regulation = EXPANSION_REGULATION[exp.code]
             const cardCount = (exp.cards as any)?.[0]?.count ?? 0
 
             return (

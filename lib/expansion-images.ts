@@ -12,6 +12,8 @@ export const EXPANSION_PACK_IMAGE: Record<string, string> = {
   M3:  "/expansions/m3.png",
   M4:  "/expansions/m4.png",
   M5:  "/expansions/m5.png",
+  MBD: "/expansions/mbd.png",
+  MBG: "/expansions/mbg.png",
 }
 
 /**

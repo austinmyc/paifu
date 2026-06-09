@@ -391,6 +391,7 @@ export function CardGrid({ cards, isLoggedIn, onWantChange }: Props) {
                     <div className="flex flex-wrap gap-1 mb-1.5">
                       {detail.stage && <Badge variant="outline" className="text-xs">{detail.stage}</Badge>}
                       {detail.type && <Badge className="text-xs">{ENERGY_LABEL[detail.type] ?? detail.type}</Badge>}
+                      {detail.regulation_mark && <Badge variant="outline" className="text-xs">{detail.regulation_mark}</Badge>}
                     </div>
                     <h2 className="text-lg font-bold leading-tight" style={{ color: "#1a3a6e" }}>{detail.name}</h2>
                     <div className="flex gap-2 flex-wrap mt-1">

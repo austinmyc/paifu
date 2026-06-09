@@ -5,10 +5,9 @@
 -- ============================================================
 
 create table if not exists expansions (
-  code             text primary key,
-  name             text not null,
-  symbol_url       text,
-  regulation_mark  text
+  code        text primary key,
+  name        text not null,
+  symbol_url  text
 );
 
 create table if not exists cards (
@@ -17,7 +16,7 @@ create table if not exists cards (
   expansion_code   text references expansions(code),
   collector_number text,
   name             text not null,
-  stage            text,          -- 基礎 | 1進化 | 2進化 | null (trainer/energy)
+  stage            text,          -- 基礎 | 1階進化 | 2階進化 | null (trainer/energy)
   evolves_from     text,          -- pre-evolution name, nullable
   dex_number       int,
   species          text,

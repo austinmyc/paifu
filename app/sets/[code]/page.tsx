@@ -11,7 +11,7 @@ export default async function SetPage({ params }: { params: Promise<{ code: stri
   const supabase = await createClient()
 
   const [{ data: expansion }, { data: cards }, { data: { user } }] = await Promise.all([
-    supabase.from("expansions").select("*").eq("code", code).single(),
+    supabase.from("expansions").select("code, name, symbol_url").eq("code", code).single(),
     supabase.from("cards")
       .select("card_id, name, stage, type, collector_number, image_url, dex_number")
       .eq("expansion_code", code)
@@ -22,7 +22,7 @@ export default async function SetPage({ params }: { params: Promise<{ code: stri
   if (!expansion) notFound()
 
   const packImage = EXPANSION_PACK_IMAGE[code]
-  const regulation = EXPANSION_REGULATION[code] ?? expansion.regulation_mark
+  const regulation = EXPANSION_REGULATION[code]
 
   return (
     <>
