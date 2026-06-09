@@ -98,14 +98,14 @@ function HintCell({ hint, value }: { hint: Hint; value: React.ReactNode }) {
   const arrow = hint === "higher" ? "↑" : hint === "lower" ? "↓" : null
   return (
     <div
-      className="flex flex-col items-center justify-center rounded-lg gap-0.5 py-2 px-1"
-      style={{ background: s.bg, minHeight: 52 }}
+      className="flex flex-col items-center justify-center rounded-lg gap-0.5 py-1 px-0.5 sm:py-2 sm:px-1 overflow-hidden"
+      style={{ background: s.bg, minHeight: 44 }}
     >
-      <span className="text-xs sm:text-sm font-semibold leading-none" style={{ color: s.textColor }}>
+      <span className="text-[10px] sm:text-xs font-semibold leading-tight w-full text-center px-0.5" style={{ color: s.textColor }}>
         {value}
       </span>
       {arrow && (
-        <span className="text-xs font-bold leading-none" style={{ color: s.arrowColor }}>
+        <span className="text-[10px] font-bold leading-none" style={{ color: s.arrowColor }}>
           {arrow}
         </span>
       )}
@@ -119,8 +119,8 @@ function TypeCell({ hint, type }: { hint: Hint; type: string | null }) {
   const col = type ? ENERGY_COLOR[type] : null
   return (
     <div
-      className="flex flex-col items-center justify-center rounded-lg gap-0.5 py-2 px-1"
-      style={{ background: s.bg, minHeight: 52 }}
+      className="flex flex-col items-center justify-center rounded-lg gap-0.5 py-1 px-0.5 sm:py-2 sm:px-1 overflow-hidden"
+      style={{ background: s.bg, minHeight: 44 }}
     >
       {col ? (
         <span
@@ -147,17 +147,21 @@ const COLS = [
   { key: "maxAttack",  label: "最高傷害" },
 ] as const
 
+// mobile: 56px image, desktop: 80px
+const IMG_W_MOB = 56
+const IMG_W_DSK = 80
+
 function GuessRow({ result, isCorrect }: { result: GuessResult; isCorrect: boolean }) {
   const c = result.card
   const stageZh: Record<string, string> = { "基礎": "基礎", "1階進化": "1階", "2階進化": "2階" }
 
   return (
-    <div className="flex gap-2 items-stretch">
-      {/* Card image — portrait ratio */}
+    <div className="flex items-stretch" style={{ gap: 6 }}>
+      {/* Card image */}
       <div
         className="flex-shrink-0 rounded-lg overflow-hidden"
         style={{
-          width: 80,
+          width: `clamp(${IMG_W_MOB}px, 14vw, ${IMG_W_DSK}px)`,
           aspectRatio: "2.5/3.5",
           background: "rgba(255,255,255,0.05)",
           border: isCorrect ? "2px solid #538d4e" : "1px solid rgba(255,255,255,0.1)",
@@ -171,12 +175,12 @@ function GuessRow({ result, isCorrect }: { result: GuessResult; isCorrect: boole
       </div>
 
       {/* Hint cells — 7 columns */}
-      <div className="grid gap-1 flex-1 min-w-0" style={{ gridTemplateColumns: "repeat(7, minmax(0, 1fr))" }}>
+      <div className="grid flex-1 min-w-0" style={{ gridTemplateColumns: "repeat(7, minmax(0, 1fr))", gap: 4 }}>
         <TypeCell hint={result.type} type={c.type} />
         <HintCell hint={result.stage} value={stageZh[c.stage] ?? c.stage ?? "—"} />
         <HintCell hint={result.hp} value={c.hp ?? "—"} />
         <HintCell hint={result.retreat} value={c.retreat_cost ?? "—"} />
-        <HintCell hint={result.weight} value={c.weight ? c.weight.replace("kg","") + "kg" : "—"} />
+        <HintCell hint={result.weight} value={c.weight ? <>{c.weight.replace("kg","")}<br/>kg</> : "—"} />
         <HintCell hint={result.regulation} value={c.regulation_mark ?? "—"} />
         <HintCell hint={result.maxAttack} value={parseMaxAttack(c.attacks) ?? "—"} />
       </div>
@@ -186,14 +190,14 @@ function GuessRow({ result, isCorrect }: { result: GuessResult; isCorrect: boole
 
 function EmptyRow() {
   return (
-    <div className="flex gap-2 items-stretch">
+    <div className="flex items-stretch" style={{ gap: 6 }}>
       <div
         className="flex-shrink-0 rounded-lg"
-        style={{ width: 80, aspectRatio: "2.5/3.5", background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.06)" }}
+        style={{ width: `clamp(${IMG_W_MOB}px, 14vw, ${IMG_W_DSK}px)`, aspectRatio: "2.5/3.5", background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.06)" }}
       />
-      <div className="grid gap-1 flex-1 min-w-0" style={{ gridTemplateColumns: "repeat(7, minmax(0, 1fr))" }}>
+      <div className="grid flex-1 min-w-0" style={{ gridTemplateColumns: "repeat(7, minmax(0, 1fr))", gap: 4 }}>
         {Array.from({ length: 7 }).map((_, i) => (
-          <div key={i} className="rounded-lg" style={{ minHeight: 52, background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.06)" }} />
+          <div key={i} className="rounded-lg" style={{ minHeight: 44, background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.06)" }} />
         ))}
       </div>
     </div>
@@ -202,14 +206,16 @@ function EmptyRow() {
 
 // ── Column header row ─────────────────────────────────────────────────────────
 
+const HEADER_LABELS = ["屬性", "階段", "HP", "撤退", "重量", "賽制標記", "最高傷害"]
+
 function HeaderRow() {
   return (
-    <div className="flex gap-2 items-center mb-1">
-      <div className="flex-shrink-0" style={{ width: 80 }} />
-      <div className="grid gap-1 flex-1 min-w-0" style={{ gridTemplateColumns: "repeat(7, minmax(0, 1fr))" }}>
-        {["屬性", "階段", "HP", "撤退", "重量", "賽制標記", "最高傷害"].map(l => (
-          <div key={l} className="text-center text-[9px] font-semibold uppercase tracking-wide py-0.5 hidden sm:block" style={{ color: "rgba(255,255,255,0.3)" }}>
-            {l}
+    <div className="flex items-center mb-1" style={{ gap: 6 }}>
+      <div className="flex-shrink-0" style={{ width: `clamp(${IMG_W_MOB}px, 14vw, ${IMG_W_DSK}px)` }} />
+      <div className="grid flex-1 min-w-0" style={{ gridTemplateColumns: "repeat(7, minmax(0, 1fr))", gap: 4 }}>
+        {HEADER_LABELS.map(l => (
+          <div key={l} className="text-center py-0.5 leading-tight" style={{ color: "rgba(255,255,255,0.3)" }}>
+            <span className="text-[8px] font-semibold break-keep">{l}</span>
           </div>
         ))}
       </div>
@@ -297,14 +303,14 @@ export function PaidleClient({ cards }: { cards: PaidleCard[] }) {
   const done = solved || failed
 
   return (
-    <div className="flex-1 flex flex-col lg:flex-row gap-0 lg:gap-8 max-w-5xl mx-auto w-full px-4 py-8">
+    <div className="flex-1 flex flex-col lg:flex-row gap-0 lg:gap-8 max-w-5xl mx-auto w-full px-4 py-6 pb-28 lg:pb-8">
 
       {/* ── Left: guess board ── */}
       <div className="flex-1 min-w-0">
         {/* Mobile header */}
-        <div className="lg:hidden text-center mb-6">
-          <h1 className="text-2xl font-bold tracking-tight" style={{ color: "#f5c842" }}>Paidle</h1>
-          <p className="text-xs mt-1" style={{ color: "rgba(255,255,255,0.35)" }}>
+        <div className="lg:hidden text-center mb-4">
+          <h1 className="text-xl font-bold tracking-tight" style={{ color: "#f5c842" }}>Paidle</h1>
+          <p className="text-xs mt-0.5" style={{ color: "rgba(255,255,255,0.35)" }}>
             猜今日的寶可夢卡牌 · {new Date().toLocaleDateString("zh-HK")}
           </p>
         </div>
@@ -315,6 +321,43 @@ export function PaidleClient({ cards }: { cards: PaidleCard[] }) {
           {results.map((r, i) => <GuessRow key={i} result={r} isCorrect={solved && i === results.length - 1} />)}
           {Array.from({ length: emptyRows }).map((_, i) => <EmptyRow key={i} />)}
         </div>
+
+        {/* Mobile: result panel shown below the board */}
+        {done && (
+          <div
+            className="lg:hidden rounded-xl p-4 mt-4"
+            style={{
+              background: solved ? "rgba(83,141,78,0.1)" : "rgba(255,255,255,0.04)",
+              border: `1px solid ${solved ? "#538d4e" : "rgba(255,255,255,0.1)"}`,
+            }}
+          >
+            <p className="font-bold text-base mb-1" style={{ color: solved ? "#f5c842" : "rgba(255,255,255,0.5)" }}>
+              {solved ? `${guesses.length}/${MAX_GUESSES} 答對了` : "答錯了"}
+            </p>
+            <p className="text-xs mb-3" style={{ color: "rgba(255,255,255,0.4)" }}>
+              今日答案：<span className="font-semibold" style={{ color: "#e2e8f0" }}>{answer.name}</span>
+            </p>
+            <div className="flex gap-4 items-start">
+              {answer.image_url && (
+                <img src={answer.image_url} alt={answer.name} className="rounded-xl"
+                  style={{ width: 100, aspectRatio: "2.5/3.5", objectFit: "cover", boxShadow: solved ? "0 0 0 3px #538d4e, 0 8px 24px rgba(83,141,78,0.4)" : "0 8px 24px rgba(0,0,0,0.5)" }}
+                />
+              )}
+              <button
+                onClick={() => {
+                  function e(h: Hint) { return h === "correct" ? "🟩" : h === "higher" || h === "lower" ? "🟨" : "⬛" }
+                  const lines = results.map(r => [e(r.type), e(r.stage), e(r.hp), e(r.retreat), e(r.weight), e(r.regulation), e(r.maxAttack)].join(""))
+                  const score = solved ? `${guesses.length}/${MAX_GUESSES}` : "X/6"
+                  navigator.clipboard.writeText(`Paidle ${new Date().toLocaleDateString("zh-HK")} ${score}\n\n${lines.join("\n")}`).then(() => { setCopied(true); setTimeout(() => setCopied(false), 2000) }).catch(() => {})
+                }}
+                className="text-xs px-3 py-1.5 rounded-lg font-semibold mt-1"
+                style={{ background: "rgba(245,200,66,0.12)", color: "#f5c842", border: "1px solid rgba(245,200,66,0.25)", cursor: "pointer" }}
+              >
+                {copied ? "已複製 ✓" : "分享結果"}
+              </button>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* ── Right: controls + info ── */}
@@ -346,9 +389,13 @@ export function PaidleClient({ cards }: { cards: PaidleCard[] }) {
           ))}
         </div>
 
-        {/* Input */}
+        {/* Input — fixed bottom on mobile, inline on desktop */}
         {!done && (
-          <div className="relative">
+          <div className="fixed bottom-0 left-0 right-0 px-4 pb-4 pt-3 lg:static lg:p-0 z-40"
+            style={{ background: "rgba(13,27,46,0.97)", backdropFilter: "blur(8px)", borderTop: "1px solid rgba(255,255,255,0.07)" }}
+            onTouchStart={e => e.stopPropagation()}
+          >
+          <div className="relative max-w-5xl mx-auto">
             <input
               ref={inputRef}
               value={input}
@@ -393,19 +440,20 @@ export function PaidleClient({ cards }: { cards: PaidleCard[] }) {
               </div>
             )}
           </div>
+          </div>
         )}
 
         {/* Remaining */}
         {!done && (
-          <p className="text-xs text-center lg:text-left" style={{ color: "rgba(255,255,255,0.25)" }}>
+          <p className="hidden lg:block text-xs" style={{ color: "rgba(255,255,255,0.25)" }}>
             剩餘 <span style={{ color: "rgba(255,255,255,0.5)", fontWeight: 600 }}>{MAX_GUESSES - guesses.length}</span> 次機會
           </p>
         )}
 
-        {/* Win / lose */}
+        {/* Win / lose — desktop only, mobile version is in left column */}
         {done && (
           <div
-            className="rounded-xl p-4"
+            className="hidden lg:block rounded-xl p-4"
             style={{
               background: solved ? "rgba(83,141,78,0.1)" : "rgba(255,255,255,0.04)",
               border: `1px solid ${solved ? "#538d4e" : "rgba(255,255,255,0.1)"}`,

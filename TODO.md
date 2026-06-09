@@ -8,7 +8,7 @@
 - [ ] Evolution chain view
 - [x] Set up collection tracking properly and wishlist
 - [ ] Card search & filter (by type, regulation mark, set, name, attack cost)
-- [ ] Deck builder — build a 60-card deck
+- [ ] Deck builder — build a deck with legality check
 - [x] Scrape remaining M-series sets
 
 ## Deck Analytics
@@ -21,5 +21,5 @@
 - [ ] Weakness coverage across the deck
 
 ## Ideas
+- [x] Paidle - Wordle like card guessing game
 - [ ] Load Pokecabook/other decklists and check missing cards
-- [ ] HK Standard legality checker (rotation dates may differ from global)

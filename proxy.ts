@@ -33,7 +33,7 @@ export async function proxy(request: NextRequest) {
 
   const isAuthPage = pathname.startsWith("/login")
   const isCallback = pathname.startsWith("/auth/callback")
-  const isPublic = pathname.startsWith("/paidle")
+  const isPublic = pathname.startsWith("/paidle") || pathname.startsWith("/sets") || pathname === "/robots.txt" || pathname === "/sitemap.xml"
   const isProtected = !isAuthPage && !isCallback && !isPublic && !pathname.startsWith("/_next") && !pathname.startsWith("/api/auth")
 
   if (isProtected && !user) {
