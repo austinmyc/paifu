@@ -1,7 +1,7 @@
 # PaiFu 牌庫 TODO
 
 ## Up Next
-- [ ] Export wishlist — let users download/share their wishlist (CSV, image, or shareable link)
+- [x] Export wishlist — let users download/share their wishlist (CSV, image, or shareable link)
 - [x] Personal stats — % of each set completed
 - [x] UI for viewing cards (perhaps a side view instead of new page)
 - [x] Local Storage optimization for images
@@ -9,7 +9,7 @@
 - [x] Set up collection tracking properly and wishlist
 - [ ] Card search & filter (by type, regulation mark, set, name, attack cost)
 - [ ] Deck builder — build a 60-card deck
-- [ ] Scrape remaining M-series sets (M2a, MBG, MBD, MC, MJ) and SV-series sets
+- [x] Scrape remaining M-series sets
 
 ## Deck Analytics
 - [ ] Max damage output per attack (with/without conditions)
