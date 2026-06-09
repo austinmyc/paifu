@@ -37,6 +37,7 @@ export default function LoginPage() {
     } else {
       const { error } = await supabase.auth.signInWithPassword({ email, password })
       if (error) setMessage({ type: "error", text: error.message })
+      else window.location.href = "/"
     }
     setLoading(false)
   }
@@ -83,7 +84,7 @@ export default function LoginPage() {
 
       {/* Card */}
       <div
-        className="relative z-10 w-[380px] rounded-2xl px-10 py-12"
+        className="relative z-10 w-[380px] max-w-[calc(100%-48px)] rounded-2xl px-10 py-12"
         style={{
           background: "rgba(255,255,255,0.04)",
           backdropFilter: "blur(16px)",

@@ -58,7 +58,7 @@ async function bgUpsert(cardId: string, qty: number, want: boolean) {
   const supabase = createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return
-  supabase.from("user_collections").upsert(
+  await supabase.from("user_collections").upsert(
     { user_id: user.id, card_id: cardId, quantity_owned: qty, want },
     { onConflict: "user_id,card_id" }
   )
@@ -135,23 +135,30 @@ function EvoStrip({
 interface Props {
   cards: CardSummary[]
   isLoggedIn: boolean
+  onWantChange?: (cardId: string, want: boolean) => void
 }
 
-export function CardGrid({ cards, isLoggedIn }: Props) {
-  // qty map keyed by card_id — pre-populated from localStorage on mount
-  const [qtys, setQtys] = useState<Record<string, number>>(() => {
-    if (typeof window === "undefined") return {}
-    const result: Record<string, number> = {}
-    for (const card of cards) {
-      const cached = lsRead(card.card_id)
-      if (cached && cached.qty > 0) result[card.card_id] = cached.qty
-    }
-    return result
-  })
+export function CardGrid({ cards, isLoggedIn, onWantChange }: Props) {
+  // qty + want maps keyed by card_id — always empty on server, populated client-side
+  const [qtys, setQtys] = useState<Record<string, number>>({})
+  const [wants, setWants] = useState<Record<string, boolean>>({})
   const loadedQtys = useRef<Set<string>>(new Set(cards.map(c => c.card_id)))
+  // Cards the user has manually changed — mount sync must not override these
+  const dirtyCards = useRef<Set<string>>(new Set())
 
   // Background sync: pull Supabase collection for this page's cards on mount
   useEffect(() => {
+    // Seed from localStorage first (avoids flash, Supabase will correct it)
+    const qtyFromLs: Record<string, number> = {}
+    const wantFromLs: Record<string, boolean> = {}
+    for (const card of cards) {
+      const cached = lsRead(card.card_id)
+      if (cached?.qty && cached.qty > 0) qtyFromLs[card.card_id] = cached.qty
+      if (cached?.want) wantFromLs[card.card_id] = true
+    }
+    if (Object.keys(qtyFromLs).length > 0) setQtys(qtyFromLs)
+    if (Object.keys(wantFromLs).length > 0) setWants(wantFromLs)
+
     if (!isLoggedIn) return
     const cardIds = cards.map(c => c.card_id)
     if (cardIds.length === 0) return
@@ -165,14 +172,19 @@ export function CardGrid({ cards, isLoggedIn }: Props) {
         .in("card_id", cardIds)
         .then(({ data }) => {
           if (!data) return
-          const updates: Record<string, number> = {}
+          const qtyUpdates: Record<string, number> = {}
+          // Build authoritative want map from Supabase for all cards on this page
+          const wantOverrides: Record<string, boolean> = {}
+          for (const id of cardIds) {
+            if (!dirtyCards.current.has(id)) wantOverrides[id] = false
+          }
           for (const row of data) {
             lsWrite(row.card_id, row.quantity_owned, row.want)
-            if (row.quantity_owned > 0) updates[row.card_id] = row.quantity_owned
+            if (row.quantity_owned > 0) qtyUpdates[row.card_id] = row.quantity_owned
+            if (!dirtyCards.current.has(row.card_id)) wantOverrides[row.card_id] = row.want
           }
-          if (Object.keys(updates).length > 0) {
-            setQtys(prev => ({ ...prev, ...updates }))
-          }
+          if (Object.keys(qtyUpdates).length > 0) setQtys(prev => ({ ...prev, ...qtyUpdates }))
+          if (Object.keys(wantOverrides).length > 0) setWants(prev => ({ ...prev, ...wantOverrides }))
         })
     })
   }, [isLoggedIn]) // eslint-disable-line react-hooks/exhaustive-deps
@@ -181,10 +193,24 @@ export function CardGrid({ cards, isLoggedIn }: Props) {
     if (loadedQtys.current.has(cardId)) return
     loadedQtys.current.add(cardId)
     const cached = lsRead(cardId)
-    if (cached) setQtys(prev => ({ ...prev, [cardId]: cached.qty }))
+    if (cached) {
+      if (cached.qty > 0) setQtys(prev => ({ ...prev, [cardId]: cached.qty }))
+      if (cached.want) setWants(prev => ({ ...prev, [cardId]: true }))
+    }
+  }
+
+  function toggleWant(cardId: string) {
+    dirtyCards.current.add(cardId)
+    const next = !wants[cardId]
+    setWants(prev => ({ ...prev, [cardId]: next }))
+    const qty = qtys[cardId] ?? 0
+    lsWrite(cardId, qty, next)
+    bgUpsert(cardId, qty, next)
+    onWantChange?.(cardId, next)
   }
 
   function adjustQty(cardId: string, delta: number) {
+    dirtyCards.current.add(cardId)
     const current = qtys[cardId] ?? 0
     const next = Math.max(0, current + delta)
     setQtys(prev => ({ ...prev, [cardId]: next }))
@@ -288,28 +314,42 @@ export function CardGrid({ cards, isLoggedIn }: Props) {
             </div>
 
             {isLoggedIn && (
-              <>
+              <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors pointer-events-none group-hover:pointer-events-auto">
+                {/* Heart toggle — top right */}
+                <button
+                  className={`absolute top-1.5 right-1.5 transition-opacity w-7 h-7 flex items-center justify-center rounded-full bg-black/40 ${wants[card.card_id] ? "opacity-100" : "opacity-0 group-hover:opacity-100"}`}
+                  onClick={e => { e.stopPropagation(); toggleWant(card.card_id) }}
+                  aria-label="加入願望清單"
+                >
+                  {wants[card.card_id] ? (
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="#f472b6" stroke="#f472b6" strokeWidth="2">
+                      <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+                    </svg>
+                  ) : (
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2">
+                      <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+                    </svg>
+                  )}
+                </button>
 
-                {/* Hover overlay with +/− controls */}
-                <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors pointer-events-none group-hover:pointer-events-auto">
-                  <div className="absolute bottom-8 inset-x-0 flex justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                    <div
-                      className="flex items-center gap-1 bg-background/90 rounded-full px-2 py-1 shadow text-xs font-medium"
-                      onClick={e => e.stopPropagation()}
-                    >
-                      <button
-                        className="w-6 h-6 rounded-full hover:bg-muted flex items-center justify-center"
-                        onClick={e => { e.stopPropagation(); adjustQty(card.card_id, -1) }}
-                      >−</button>
-                      <span className="w-4 text-center tabular-nums">{qtys[card.card_id] ?? 0}</span>
-                      <button
-                        className="w-6 h-6 rounded-full hover:bg-muted flex items-center justify-center"
-                        onClick={e => { e.stopPropagation(); adjustQty(card.card_id, 1) }}
-                      >+</button>
-                    </div>
+                {/* +/− qty controls — bottom */}
+                <div className="absolute bottom-8 inset-x-0 flex justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                  <div
+                    className="flex items-center gap-1 bg-background/90 rounded-full px-2 py-1 shadow text-xs font-medium"
+                    onClick={e => e.stopPropagation()}
+                  >
+                    <button
+                      className="w-6 h-6 rounded-full hover:bg-muted flex items-center justify-center"
+                      onClick={e => { e.stopPropagation(); adjustQty(card.card_id, -1) }}
+                    >−</button>
+                    <span className="w-4 text-center tabular-nums">{qtys[card.card_id] ?? 0}</span>
+                    <button
+                      className="w-6 h-6 rounded-full hover:bg-muted flex items-center justify-center"
+                      onClick={e => { e.stopPropagation(); adjustQty(card.card_id, 1) }}
+                    >+</button>
                   </div>
                 </div>
-              </>
+              </div>
             )}
           </div>
         ))}
@@ -368,6 +408,11 @@ export function CardGrid({ cards, isLoggedIn }: Props) {
                       cardId={detail.card_id}
                       initialQuantity={colInit.qty}
                       initialWant={colInit.want}
+                      onQtyChange={qty => setQtys(prev => ({ ...prev, [detail.card_id]: qty }))}
+                      onWantChange={want => {
+                        setWants(prev => ({ ...prev, [detail.card_id]: want }))
+                        onWantChange?.(detail.card_id, want)
+                      }}
                     />
                   )}
 

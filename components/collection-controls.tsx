@@ -9,6 +9,8 @@ interface Props {
   cardId: string
   initialQuantity: number
   initialWant: boolean
+  onQtyChange?: (qty: number) => void
+  onWantChange?: (want: boolean) => void
 }
 
 function lsKey(cardId: string) {
@@ -40,7 +42,7 @@ async function syncToSupabase(cardId: string, quantity: number, want: boolean) {
   if (error) toast.error("更新失敗")
 }
 
-export function CollectionControls({ cardId, initialQuantity, initialWant }: Props) {
+export function CollectionControls({ cardId, initialQuantity, initialWant, onQtyChange, onWantChange }: Props) {
   const cached = readCache(cardId)
   const [qty, setQty] = useState(cached?.qty ?? initialQuantity)
   const [want, setWant] = useState(cached?.want ?? initialWant)
@@ -58,6 +60,7 @@ export function CollectionControls({ cardId, initialQuantity, initialWant }: Pro
     setQty(next)
     writeCache(cardId, next, want)
     syncToSupabase(cardId, next, want)
+    onQtyChange?.(next)
   }
 
   function toggleWant() {
@@ -65,6 +68,7 @@ export function CollectionControls({ cardId, initialQuantity, initialWant }: Pro
     setWant(next)
     writeCache(cardId, qty, next)
     syncToSupabase(cardId, qty, next)
+    onWantChange?.(next)
   }
 
   return (
