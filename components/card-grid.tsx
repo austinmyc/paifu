@@ -8,7 +8,7 @@ import { Badge } from "@/components/ui/badge"
 import Link from "next/link"
 import { HypotrochoidLoader } from "@/components/hypotrochoid-loader"
 
-interface CardSummary {
+export interface CardSummary {
   card_id: string
   name: string
   stage: string | null

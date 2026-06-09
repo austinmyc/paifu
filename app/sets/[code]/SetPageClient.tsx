@@ -1,16 +1,6 @@
 "use client"
 import { useState } from "react"
-import { CardGrid } from "@/components/card-grid"
-
-interface CardSummary {
-  card_id: string
-  name: string
-  stage: string | null
-  type: string | null
-  collector_number: string | null
-  image_url: string | null
-  dex_number: number | null
-}
+import { CardGrid, CardSummary } from "@/components/card-grid"
 
 function CollectionBar({ label, owned, total }: { label: string; owned: number; total: number }) {
   const pct = total > 0 ? Math.round((owned / total) * 100) : 0
