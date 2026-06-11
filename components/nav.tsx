@@ -7,11 +7,13 @@ import { createClient } from "@/lib/supabase/client"
 
 const authedLinks = [
   { href: "/sets", label: "卡牌" },
+  { href: "/search", label: "搜尋" },
   { href: "/wishlist", label: "願望清單" },
   { href: "/paidle", label: "Paidle" },
 ]
 
 const publicLinks = [
+  { href: "/search", label: "搜尋" },
   { href: "/paidle", label: "Paidle" },
 ]
 
@@ -56,9 +58,11 @@ export function Nav() {
       <header
         className="sticky top-0 z-50"
         style={{
-          backgroundColor: "#0d1b2e",
-          borderBottom: "1px solid rgba(245,200,66,0.15)",
-          boxShadow: "0 2px 16px rgba(0,0,0,0.3)",
+          backgroundColor: "rgba(13,27,46,0.88)",
+          backdropFilter: "blur(16px) saturate(160%)",
+          WebkitBackdropFilter: "blur(16px) saturate(160%)",
+          borderBottom: "1px solid rgba(245,200,66,0.18)",
+          boxShadow: "inset 0 1px 0 rgba(255,255,255,0.06), 0 2px 24px rgba(13,27,46,0.25)",
         }}
       >
         <div className="max-w-5xl mx-auto px-4 h-14 flex items-center justify-between">
@@ -137,7 +141,7 @@ export function Nav() {
         {menuOpen && (
           <div
             className="sm:hidden flex flex-col py-2"
-            style={{ borderTop: "1px solid rgba(245,200,66,0.1)", backgroundColor: "#0d1b2e" }}
+            style={{ borderTop: "1px solid rgba(245,200,66,0.1)", backgroundColor: "rgba(13,27,46,0.96)", backdropFilter: "blur(16px)", WebkitBackdropFilter: "blur(16px)" }}
           >
             {links.map(l => {
               const active = pathname.startsWith(l.href)

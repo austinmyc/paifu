@@ -19,6 +19,10 @@ BASE_URL = "https://asia.pokemon-card.com"
 HEADERS = {"User-Agent": "Mozilla/5.0 (compatible; ptcg-scraper/1.0)"}
 DELAY = 0.5
 
+# Non-Pokémon card category headers shown on detail pages.
+# Note: the site labels tools as 寶可夢道具 (no trailing 卡), the others end in 卡.
+CARD_CATEGORIES = {"物品卡", "支援者卡", "競技場卡", "寶可夢道具", "寶可夢道具卡", "基本能量卡", "特殊能量卡"}
+
 
 def _get(url: str) -> BeautifulSoup:
     resp = requests.get(url, headers=HEADERS, timeout=15)
@@ -144,6 +148,16 @@ def scrape_card_detail(url: str) -> dict:
             first_step = pre_list.select_one("li.step a")
             evolves_from = first_step.get_text(strip=True) if first_step else None
     data["evolves_from"] = evolves_from
+
+    # Card category — trainer/energy pages show it as the skill section header
+    # (e.g. 物品卡, 支援者卡); Pokémon pages show 招式/特性 instead.
+    card_type = None
+    for h in soup.select("div.skillInformation h3.commonHeader"):
+        txt = h.get_text(strip=True)
+        if txt in CARD_CATEGORIES:
+            card_type = txt.removesuffix("卡")
+            break
+    data["card_type"] = card_type
 
     # Attacks
     attacks = []

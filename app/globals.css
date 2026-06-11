@@ -1,9 +1,4 @@
 @import "tailwindcss";
-
-.set-card:hover {
-  border-color: rgba(245, 200, 66, 0.7) !important;
-  box-shadow: 0 4px 16px rgba(26, 58, 110, 0.1);
-}
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
 
@@ -128,8 +123,147 @@
   }
   body {
     @apply bg-background text-foreground;
+    /* Soft navy-tinted wash so light pages blend into the dark nav */
+    background:
+      radial-gradient(1100px 320px at 50% -120px, rgba(26, 58, 110, 0.14), transparent 70%),
+      radial-gradient(900px 500px at 100% 100%, rgba(245, 200, 66, 0.05), transparent 60%),
+      linear-gradient(180deg, #eef2f8 0%, #f7f9fc 100%);
+    background-attachment: fixed;
   }
   html {
     @apply font-sans;
   }
+}
+
+/* ── Liquid glass ─────────────────────────────────────────────── */
+
+.liquid-glass {
+  position: relative;
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.1) 0%,
+    rgba(255, 255, 255, 0.04) 45%,
+    rgba(255, 255, 255, 0.02) 100%
+  );
+  backdrop-filter: blur(28px) saturate(180%);
+  -webkit-backdrop-filter: blur(28px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.22),
+    inset 0 -1px 0 rgba(255, 255, 255, 0.04),
+    0 0 0 1px rgba(245, 200, 66, 0.06),
+    0 24px 64px rgba(0, 0, 0, 0.5);
+}
+
+.liquid-glass::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: radial-gradient(120% 60% at 50% -10%, rgba(255, 255, 255, 0.12), transparent 60%);
+  pointer-events: none;
+}
+
+.glass-input {
+  width: 100%;
+  padding: 11px 14px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 10px;
+  color: #fff;
+  font-size: 14px;
+  outline: none;
+  box-sizing: border-box;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06);
+  transition: border-color 0.2s, background 0.2s, box-shadow 0.2s;
+}
+
+.glass-input::placeholder {
+  color: rgba(255, 255, 255, 0.35);
+}
+
+.glass-input:focus {
+  border-color: rgba(245, 200, 66, 0.5);
+  background: rgba(255, 255, 255, 0.09);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.08),
+    0 0 0 3px rgba(245, 200, 66, 0.12);
+}
+
+.glass-orb {
+  position: absolute;
+  border-radius: 9999px;
+  filter: blur(70px);
+  pointer-events: none;
+  animation: orb-drift 16s ease-in-out infinite alternate;
+}
+
+@keyframes orb-drift {
+  0% {
+    transform: translate(0, 0) scale(1);
+  }
+  50% {
+    transform: translate(40px, -30px) scale(1.12);
+  }
+  100% {
+    transform: translate(-30px, 25px) scale(0.95);
+  }
+}
+
+/* ── Paidle ───────────────────────────────────────────────────── */
+
+.paidle-cell {
+  animation: paidle-reveal 0.4s cubic-bezier(0.2, 0.9, 0.3, 1.2) both;
+}
+
+@keyframes paidle-reveal {
+  0% {
+    opacity: 0;
+    transform: rotateX(70deg) scale(0.9);
+  }
+  100% {
+    opacity: 1;
+    transform: rotateX(0deg) scale(1);
+  }
+}
+
+.glass-panel {
+  background: linear-gradient(150deg, rgba(255, 255, 255, 0.06), rgba(255, 255, 255, 0.02));
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.07);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+/* ── Set cards (/sets) ────────────────────────────────────────── */
+
+.set-card {
+  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+}
+
+.set-card:hover {
+  border-color: rgba(245, 200, 66, 0.7) !important;
+  box-shadow: 0 8px 24px rgba(26, 58, 110, 0.16);
+  transform: translateY(-2px);
+}
+
+.set-card-img {
+  transition: transform 0.3s ease;
+}
+
+.set-card:hover .set-card-img {
+  transform: scale(1.06);
+}
+
+.set-card-arrow {
+  opacity: 0;
+  transform: translateX(-4px);
+  transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+.set-card:hover .set-card-arrow {
+  opacity: 1;
+  transform: translateX(0);
 }

@@ -17,7 +17,26 @@ export default async function SetsPage() {
     <>
       <Nav />
       <PageLoader><main className="max-w-3xl mx-auto px-4 py-8">
-        
+        {/* Page header */}
+        <div className="mb-6 flex items-end justify-between">
+          <div>
+            <h1 className="text-2xl font-bold tracking-tight" style={{ color: "#1a3a6e" }}>
+              卡牌系列
+            </h1>
+            <p className="text-sm mt-1" style={{ color: "rgba(26,58,110,0.5)" }}>
+              繁中版寶可夢卡牌擴充系列
+            </p>
+          </div>
+          {(expansions?.length ?? 0) > 0 && (
+            <span
+              className="text-xs font-medium px-2.5 py-1 rounded-full flex-shrink-0"
+              style={{ background: "rgba(26,58,110,0.08)", color: "rgba(26,58,110,0.65)" }}
+            >
+              共 {expansions!.length} 個系列
+            </span>
+          )}
+        </div>
+
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           {expansions?.map(exp => {
             const packImage = EXPANSION_PACK_IMAGE[exp.code]
@@ -32,7 +51,7 @@ export default async function SetsPage() {
                 >
                   {/* Pack image */}
                   <div
-                    className="flex-shrink-0 flex items-center justify-center"
+                    className="flex-shrink-0 flex items-center justify-center overflow-hidden"
                     style={{
                       width: 140,
                       minHeight: 160,
@@ -41,19 +60,20 @@ export default async function SetsPage() {
                         repeating-linear-gradient(45deg, rgba(245,200,66,0.12) 0px, rgba(245,200,66,0.12) 1px, transparent 1px, transparent 20px),
                         repeating-linear-gradient(-45deg, rgba(245,200,66,0.12) 0px, rgba(245,200,66,0.12) 1px, transparent 1px, transparent 20px)
                       `,
+                      borderRight: "1px solid rgba(245,200,66,0.25)",
                     }}
                   >
                     {packImage ? (
-                      <img src={packImage} alt={exp.name} className="object-contain p-2" style={{ width: 140, height: 160 }} />
+                      <img src={packImage} alt={exp.name} className="set-card-img object-contain p-2" style={{ width: 140, height: 160 }} />
                     ) : exp.symbol_url ? (
-                      <img src={exp.symbol_url} alt={exp.code} className="h-12 w-auto object-contain opacity-70" />
+                      <img src={exp.symbol_url} alt={exp.code} className="set-card-img h-12 w-auto object-contain opacity-70" />
                     ) : (
                       <span className="text-xl font-bold text-white/40">{exp.code}</span>
                     )}
                   </div>
 
                   {/* Info */}
-                  <div className="flex flex-col justify-center px-4 py-3 gap-2">
+                  <div className="flex flex-col justify-center px-4 py-3 gap-2 flex-1 min-w-0">
                     <p className="font-semibold text-sm leading-snug" style={{ color: "#1a3a6e" }}>{exp.name}</p>
                     <div className="flex items-center gap-1.5 flex-wrap">
                       <span
@@ -74,6 +94,11 @@ export default async function SetsPage() {
                     {cardCount > 0 && (
                       <p className="text-xs" style={{ color: "rgba(26,58,110,0.45)" }}>{cardCount} 張卡牌</p>
                     )}
+                  </div>
+
+                  {/* Hover affordance */}
+                  <div className="set-card-arrow flex items-center pr-3 flex-shrink-0 self-center" aria-hidden>
+                    <span className="text-lg font-bold" style={{ color: "rgba(245,200,66,0.9)" }}>›</span>
                   </div>
                 </div>
               </Link>

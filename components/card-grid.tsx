@@ -36,9 +36,12 @@ interface CardDetail extends CardSummary {
 
 const ENERGY_LABEL: Record<string, string> = {
   Grass: "草", Fire: "火", Water: "水", Lightning: "雷",
-  Psychic: "超", Fighting: "格", Darkness: "惡", Metal: "鋼",
-  Dragon: "龍", Colorless: "無",
+  Psychic: "超", Fighting: "鬥", Darkness: "惡", Metal: "鋼",
+  Dragon: "龍", Colorless: "普通",
 }
+
+// Attack costs keep the card-text convention: colorless cost is 無, not 普通
+const COST_LABEL: Record<string, string> = { ...ENERGY_LABEL, Colorless: "無" }
 
 function lsRead(cardId: string): { qty: number; want: boolean } | null {
   try {
@@ -419,8 +422,8 @@ export function CardGrid({ cards, isLoggedIn, onWantChange, onQtyChange }: Props
                     />
                   )}
 
-                  {/* Stats */}
-                  {(detail.weakness || detail.resistance || detail.retreat_cost != null) && (
+                  {/* Stats — Pokémon only (trainers/energies have no retreat cost) */}
+                  {detail.stage && (detail.weakness || detail.resistance || detail.retreat_cost != null) && (
                     <div className="grid grid-cols-3 gap-1.5">
                       {detail.weakness && (
                         <div className="rounded-lg p-2 text-center" style={{ background: "rgba(26,58,110,0.05)", border: "1px solid rgba(26,58,110,0.1)" }}>
@@ -451,7 +454,7 @@ export function CardGrid({ cards, isLoggedIn, onWantChange, onQtyChange }: Props
                         <div key={i} className="rounded-lg p-2.5 space-y-1" style={{ background: "rgba(26,58,110,0.03)", border: "1px solid rgba(26,58,110,0.1)" }}>
                           <div className="flex items-center justify-between">
                             <div className="flex items-center gap-1.5">
-                              <span className="text-xs text-muted-foreground">{atk.cost.map(c => ENERGY_LABEL[c] ?? c).join(" ")}</span>
+                              <span className="text-xs text-muted-foreground">{atk.cost.map(c => COST_LABEL[c] ?? c).join(" ")}</span>
                               <span className="font-semibold text-sm">{atk.name}</span>
                             </div>
                             {atk.damage && <span className="font-bold text-sm" style={{ color: "#1a3a6e" }}>{atk.damage}</span>}

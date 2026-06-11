@@ -42,18 +42,6 @@ export default function LoginPage() {
     setLoading(false)
   }
 
-  const inputStyle = {
-    width: "100%",
-    padding: "11px 14px",
-    background: "rgba(255,255,255,0.06)",
-    border: "1px solid rgba(255,255,255,0.12)",
-    borderRadius: 8,
-    color: "#fff",
-    fontSize: 14,
-    outline: "none",
-    boxSizing: "border-box" as const,
-  }
-
   return (
     <div
       className="min-h-screen flex items-center justify-center overflow-hidden relative"
@@ -69,30 +57,44 @@ export default function LoginPage() {
           `,
         }}
       />
-      {/* Radial glow */}
+      {/* Drifting glow orbs behind the glass */}
       <div
-        className="absolute pointer-events-none"
+        className="glass-orb"
         style={{
-          width: 600,
-          height: 600,
-          background: "radial-gradient(circle, rgba(26,58,110,0.6) 0%, transparent 70%)",
-          top: "50%",
-          left: "50%",
-          transform: "translate(-50%, -50%)",
+          width: 420,
+          height: 420,
+          background: "radial-gradient(circle, rgba(46,90,160,0.55) 0%, transparent 70%)",
+          top: "12%",
+          left: "18%",
+        }}
+      />
+      <div
+        className="glass-orb"
+        style={{
+          width: 360,
+          height: 360,
+          background: "radial-gradient(circle, rgba(245,200,66,0.18) 0%, transparent 70%)",
+          bottom: "8%",
+          right: "14%",
+          animationDelay: "-6s",
+          animationDuration: "20s",
+        }}
+      />
+      <div
+        className="glass-orb"
+        style={{
+          width: 300,
+          height: 300,
+          background: "radial-gradient(circle, rgba(120,80,200,0.25) 0%, transparent 70%)",
+          top: "55%",
+          left: "8%",
+          animationDelay: "-11s",
+          animationDuration: "24s",
         }}
       />
 
       {/* Card */}
-      <div
-        className="relative z-10 w-[380px] max-w-[calc(100%-48px)] rounded-2xl px-10 py-12"
-        style={{
-          background: "rgba(255,255,255,0.04)",
-          backdropFilter: "blur(16px)",
-          WebkitBackdropFilter: "blur(16px)",
-          border: "1px solid rgba(245,200,66,0.25)",
-          boxShadow: "0 0 0 1px rgba(245,200,66,0.08), 0 24px 64px rgba(0,0,0,0.5)",
-        }}
-      >
+      <div className="liquid-glass relative z-10 w-[380px] max-w-[calc(100%-48px)] rounded-3xl px-10 py-12">
         {/* Logo */}
         <div className="flex flex-col items-center gap-2 mb-8">
           <svg width="48" height="48" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
@@ -130,6 +132,8 @@ export default function LoginPage() {
             padding: "13px 20px",
             background: "rgba(255,255,255,0.07)",
             border: "1px solid rgba(255,255,255,0.15)",
+            boxShadow: "inset 0 1px 0 rgba(255,255,255,0.1)",
+            cursor: "pointer",
           }}
           onMouseEnter={e => {
             (e.currentTarget as HTMLButtonElement).style.background = "rgba(255,255,255,0.12)"
@@ -164,7 +168,7 @@ export default function LoginPage() {
             value={email}
             onChange={e => setEmail(e.target.value)}
             required
-            style={inputStyle}
+            className="glass-input"
           />
           <input
             type="password"
@@ -172,7 +176,7 @@ export default function LoginPage() {
             value={password}
             onChange={e => setPassword(e.target.value)}
             required
-            style={inputStyle}
+            className="glass-input"
           />
 
           {message && (
@@ -194,7 +198,7 @@ export default function LoginPage() {
             style={{
               width: "100%",
               padding: "13px",
-              background: "linear-gradient(135deg, #f5c842, #e8a800)",
+              background: "linear-gradient(135deg, #f8d35e, #e8a800)",
               border: "none",
               borderRadius: 10,
               color: "#0d1b2e",
@@ -203,6 +207,7 @@ export default function LoginPage() {
               cursor: loading ? "not-allowed" : "pointer",
               opacity: loading ? 0.7 : 1,
               marginTop: 2,
+              boxShadow: "inset 0 1px 0 rgba(255,255,255,0.35), 0 4px 20px rgba(245,200,66,0.25)",
             }}
           >
             {loading ? "處理中…" : mode === "signin" ? "登入" : "註冊"}

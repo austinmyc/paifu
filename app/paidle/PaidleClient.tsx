@@ -7,8 +7,8 @@ const MAX_GUESSES = 6
 
 const ENERGY_ZH: Record<string, string> = {
   Grass: "草", Fire: "火", Water: "水", Lightning: "雷",
-  Psychic: "超", Fighting: "格", Darkness: "惡", Metal: "鋼",
-  Dragon: "龍", Colorless: "無",
+  Psychic: "超", Fighting: "鬥", Darkness: "惡", Metal: "鋼",
+  Dragon: "龍", Colorless: "普通",
 }
 
 const ENERGY_COLOR: Record<string, { bg: string; text: string }> = {
@@ -83,23 +83,34 @@ function evaluate(guess: PaidleCard, answer: PaidleCard): GuessResult {
 
 // ── Hint cell ────────────────────────────────────────────────────────────────
 
-function cellBg(hint: Hint): { bg: string; textColor: string; arrowColor: string } {
+function cellBg(hint: Hint): { bg: string; border: string; textColor: string; arrowColor: string } {
   switch (hint) {
-    case "correct":  return { bg: "#538d4e", textColor: "#fff", arrowColor: "#fff" }
+    case "correct":  return { bg: "linear-gradient(160deg, #4faf68, #2e7d4a)", border: "rgba(120,220,150,0.35)", textColor: "#fff", arrowColor: "#fff" }
     case "higher":
-    case "lower":    return { bg: "#b59f3b", textColor: "#fff", arrowColor: "#fff" }
-    case "wrong":    return { bg: "#3a3a3c", textColor: "rgba(255,255,255,0.7)", arrowColor: "transparent" }
-    default:         return { bg: "#3a3a3c", textColor: "rgba(255,255,255,0.4)", arrowColor: "transparent" }
+    case "lower":    return { bg: "linear-gradient(160deg, #d4ab2e, #a37d18)", border: "rgba(245,200,66,0.4)", textColor: "#fff", arrowColor: "#fff" }
+    case "wrong":    return { bg: "linear-gradient(160deg, #253751, #1a293f)", border: "rgba(255,255,255,0.08)", textColor: "rgba(255,255,255,0.65)", arrowColor: "transparent" }
+    default:         return { bg: "linear-gradient(160deg, #253751, #1a293f)", border: "rgba(255,255,255,0.08)", textColor: "rgba(255,255,255,0.35)", arrowColor: "transparent" }
   }
 }
 
-function HintCell({ hint, value }: { hint: Hint; value: React.ReactNode }) {
+function cellStyle(hint: Hint, delay: number): React.CSSProperties {
+  const s = cellBg(hint)
+  return {
+    background: s.bg,
+    minHeight: 44,
+    border: `1px solid ${s.border}`,
+    boxShadow: "inset 0 1px 0 rgba(255,255,255,0.12), 0 2px 6px rgba(0,0,0,0.25)",
+    animationDelay: `${delay * 70}ms`,
+  }
+}
+
+function HintCell({ hint, value, delay }: { hint: Hint; value: React.ReactNode; delay: number }) {
   const s = cellBg(hint)
   const arrow = hint === "higher" ? "↑" : hint === "lower" ? "↓" : null
   return (
     <div
-      className="flex flex-col items-center justify-center rounded-lg gap-0.5 py-1 px-0.5 sm:py-2 sm:px-1 overflow-hidden"
-      style={{ background: s.bg, minHeight: 44 }}
+      className="paidle-cell flex flex-col items-center justify-center rounded-lg gap-0.5 py-1 px-0.5 sm:py-2 sm:px-1 overflow-hidden"
+      style={cellStyle(hint, delay)}
     >
       <span className="text-[10px] sm:text-xs font-semibold leading-tight w-full text-center px-0.5" style={{ color: s.textColor }}>
         {value}
@@ -113,19 +124,19 @@ function HintCell({ hint, value }: { hint: Hint; value: React.ReactNode }) {
   )
 }
 
-function TypeCell({ hint, type }: { hint: Hint; type: string | null }) {
+function TypeCell({ hint, type, delay }: { hint: Hint; type: string | null; delay: number }) {
   const s = cellBg(hint)
   const zh = type ? (ENERGY_ZH[type] ?? type) : "—"
   const col = type ? ENERGY_COLOR[type] : null
   return (
     <div
-      className="flex flex-col items-center justify-center rounded-lg gap-0.5 py-1 px-0.5 sm:py-2 sm:px-1 overflow-hidden"
-      style={{ background: s.bg, minHeight: 44 }}
+      className="paidle-cell flex flex-col items-center justify-center rounded-lg gap-0.5 py-1 px-0.5 sm:py-2 sm:px-1 overflow-hidden"
+      style={cellStyle(hint, delay)}
     >
       {col ? (
         <span
           className="text-xs font-bold px-1.5 py-0.5 rounded"
-          style={{ background: col.bg, color: col.text }}
+          style={{ background: col.bg, color: col.text, boxShadow: "0 1px 4px rgba(0,0,0,0.3)" }}
         >
           {zh}
         </span>
@@ -164,8 +175,8 @@ function GuessRow({ result, isCorrect }: { result: GuessResult; isCorrect: boole
           width: `clamp(${IMG_W_MOB}px, 14vw, ${IMG_W_DSK}px)`,
           aspectRatio: "2.5/3.5",
           background: "rgba(255,255,255,0.05)",
-          border: isCorrect ? "2px solid #538d4e" : "1px solid rgba(255,255,255,0.1)",
-          boxShadow: isCorrect ? "0 0 12px rgba(83,141,78,0.5)" : "0 2px 8px rgba(0,0,0,0.4)",
+          border: isCorrect ? "2px solid #4faf68" : "1px solid rgba(255,255,255,0.1)",
+          boxShadow: isCorrect ? "0 0 16px rgba(79,175,104,0.55)" : "0 2px 8px rgba(0,0,0,0.4)",
         }}
       >
         {c.image_url
@@ -176,13 +187,13 @@ function GuessRow({ result, isCorrect }: { result: GuessResult; isCorrect: boole
 
       {/* Hint cells — 7 columns */}
       <div className="grid flex-1 min-w-0" style={{ gridTemplateColumns: "repeat(7, minmax(0, 1fr))", gap: 4 }}>
-        <TypeCell hint={result.type} type={c.type} />
-        <HintCell hint={result.stage} value={stageZh[c.stage] ?? c.stage ?? "—"} />
-        <HintCell hint={result.hp} value={c.hp ?? "—"} />
-        <HintCell hint={result.retreat} value={c.retreat_cost ?? "—"} />
-        <HintCell hint={result.weight} value={c.weight ? <>{c.weight.replace("kg","")}<br/>kg</> : "—"} />
-        <HintCell hint={result.regulation} value={c.regulation_mark ?? "—"} />
-        <HintCell hint={result.maxAttack} value={parseMaxAttack(c.attacks) ?? "—"} />
+        <TypeCell hint={result.type} type={c.type} delay={0} />
+        <HintCell hint={result.stage} value={stageZh[c.stage] ?? c.stage ?? "—"} delay={1} />
+        <HintCell hint={result.hp} value={c.hp ?? "—"} delay={2} />
+        <HintCell hint={result.retreat} value={c.retreat_cost ?? "—"} delay={3} />
+        <HintCell hint={result.weight} value={c.weight ? <>{c.weight.replace("kg","")}<br/>kg</> : "—"} delay={4} />
+        <HintCell hint={result.regulation} value={c.regulation_mark ?? "—"} delay={5} />
+        <HintCell hint={result.maxAttack} value={parseMaxAttack(c.attacks) ?? "—"} delay={6} />
       </div>
     </div>
   )
@@ -193,11 +204,11 @@ function EmptyRow() {
     <div className="flex items-stretch" style={{ gap: 6 }}>
       <div
         className="flex-shrink-0 rounded-lg"
-        style={{ width: `clamp(${IMG_W_MOB}px, 14vw, ${IMG_W_DSK}px)`, aspectRatio: "2.5/3.5", background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.06)" }}
+        style={{ width: `clamp(${IMG_W_MOB}px, 14vw, ${IMG_W_DSK}px)`, aspectRatio: "2.5/3.5", background: "rgba(255,255,255,0.02)", border: "1px dashed rgba(255,255,255,0.08)" }}
       />
       <div className="grid flex-1 min-w-0" style={{ gridTemplateColumns: "repeat(7, minmax(0, 1fr))", gap: 4 }}>
         {Array.from({ length: 7 }).map((_, i) => (
-          <div key={i} className="rounded-lg" style={{ minHeight: 44, background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.06)" }} />
+          <div key={i} className="rounded-lg" style={{ minHeight: 44, background: "rgba(255,255,255,0.02)", border: "1px dashed rgba(255,255,255,0.08)" }} />
         ))}
       </div>
     </div>
@@ -214,8 +225,8 @@ function HeaderRow() {
       <div className="flex-shrink-0" style={{ width: `clamp(${IMG_W_MOB}px, 14vw, ${IMG_W_DSK}px)` }} />
       <div className="grid flex-1 min-w-0" style={{ gridTemplateColumns: "repeat(7, minmax(0, 1fr))", gap: 4 }}>
         {HEADER_LABELS.map(l => (
-          <div key={l} className="text-center py-0.5 leading-tight" style={{ color: "rgba(255,255,255,0.3)" }}>
-            <span className="text-[8px] font-semibold break-keep">{l}</span>
+          <div key={l} className="text-center py-0.5 leading-tight" style={{ color: "rgba(245,200,66,0.55)" }}>
+            <span className="text-[8px] font-semibold tracking-wide break-keep">{l}</span>
           </div>
         ))}
       </div>
@@ -325,11 +336,11 @@ export function PaidleClient({ cards }: { cards: PaidleCard[] }) {
         {/* Mobile: result panel shown below the board */}
         {done && (
           <div
-            className="lg:hidden rounded-xl p-4 mt-4"
-            style={{
-              background: solved ? "rgba(83,141,78,0.1)" : "rgba(255,255,255,0.04)",
-              border: `1px solid ${solved ? "#538d4e" : "rgba(255,255,255,0.1)"}`,
-            }}
+            className="glass-panel lg:hidden rounded-xl p-4 mt-4"
+            style={solved ? {
+              background: "linear-gradient(150deg, rgba(79,175,104,0.16), rgba(79,175,104,0.05))",
+              border: "1px solid rgba(79,175,104,0.45)",
+            } : undefined}
           >
             <p className="font-bold text-base mb-1" style={{ color: solved ? "#f5c842" : "rgba(255,255,255,0.5)" }}>
               {solved ? `${guesses.length}/${MAX_GUESSES} 答對了` : "答錯了"}
@@ -340,7 +351,7 @@ export function PaidleClient({ cards }: { cards: PaidleCard[] }) {
             <div className="flex gap-4 items-start">
               {answer.image_url && (
                 <img src={answer.image_url} alt={answer.name} className="rounded-xl"
-                  style={{ width: 100, aspectRatio: "2.5/3.5", objectFit: "cover", boxShadow: solved ? "0 0 0 3px #538d4e, 0 8px 24px rgba(83,141,78,0.4)" : "0 8px 24px rgba(0,0,0,0.5)" }}
+                  style={{ width: 100, aspectRatio: "2.5/3.5", objectFit: "cover", boxShadow: solved ? "0 0 0 3px #4faf68, 0 8px 24px rgba(79,175,104,0.4)" : "0 8px 24px rgba(0,0,0,0.5)" }}
                 />
               )}
               <button
@@ -382,8 +393,9 @@ export function PaidleClient({ cards }: { cards: PaidleCard[] }) {
               className="h-1.5 flex-1 rounded-full transition-all duration-300"
               style={{
                 background: i < guesses.length
-                  ? (solved && i === guesses.length - 1 ? "#f5c842" : "rgba(255,255,255,0.25)")
+                  ? (solved && i === guesses.length - 1 ? "#f5c842" : "rgba(245,200,66,0.35)")
                   : "rgba(255,255,255,0.08)",
+                boxShadow: solved && i === guesses.length - 1 ? "0 0 8px rgba(245,200,66,0.6)" : "none",
               }}
             />
           ))}
@@ -403,19 +415,13 @@ export function PaidleClient({ cards }: { cards: PaidleCard[] }) {
               onKeyDown={onKeyDown}
               placeholder="輸入卡牌名稱…"
               autoComplete="off"
-              className="w-full px-4 py-3 rounded-xl text-sm outline-none transition-all"
-              style={{
-                background: "rgba(255,255,255,0.06)",
-                border: "1px solid rgba(245,200,66,0.2)",
-                color: "#e2e8f0",
-              }}
-              onFocus={e => (e.currentTarget.style.borderColor = "rgba(245,200,66,0.5)")}
-              onBlur={e => (e.currentTarget.style.borderColor = "rgba(245,200,66,0.2)")}
+              className="glass-input"
+              style={{ padding: "13px 16px", borderColor: "rgba(245,200,66,0.22)" }}
             />
             {suggestions.length > 0 && (
               <div
                 className="absolute left-0 right-0 top-full mt-1 rounded-xl overflow-hidden z-50"
-                style={{ background: "#111f35", border: "1px solid rgba(245,200,66,0.15)", boxShadow: "0 12px 40px rgba(0,0,0,0.6)" }}
+                style={{ background: "rgba(17,31,53,0.95)", backdropFilter: "blur(16px)", WebkitBackdropFilter: "blur(16px)", border: "1px solid rgba(245,200,66,0.18)", boxShadow: "inset 0 1px 0 rgba(255,255,255,0.06), 0 12px 40px rgba(0,0,0,0.6)" }}
               >
                 {suggestions.map((c, i) => (
                   <button
@@ -453,11 +459,11 @@ export function PaidleClient({ cards }: { cards: PaidleCard[] }) {
         {/* Win / lose — desktop only, mobile version is in left column */}
         {done && (
           <div
-            className="hidden lg:block rounded-xl p-4"
-            style={{
-              background: solved ? "rgba(83,141,78,0.1)" : "rgba(255,255,255,0.04)",
-              border: `1px solid ${solved ? "#538d4e" : "rgba(255,255,255,0.1)"}`,
-            }}
+            className="glass-panel hidden lg:block rounded-xl p-4"
+            style={solved ? {
+              background: "linear-gradient(150deg, rgba(79,175,104,0.16), rgba(79,175,104,0.05))",
+              border: "1px solid rgba(79,175,104,0.45)",
+            } : undefined}
           >
             <p className="font-bold text-base mb-1" style={{ color: solved ? "#f5c842" : "rgba(255,255,255,0.5)" }}>
               {solved ? `${guesses.length}/${MAX_GUESSES} 答對了` : "答錯了"}
@@ -470,7 +476,7 @@ export function PaidleClient({ cards }: { cards: PaidleCard[] }) {
                 src={answer.image_url}
                 alt={answer.name}
                 className="rounded-xl mb-3"
-                style={{ width: "100%", maxWidth: 200, aspectRatio: "2.5/3.5", objectFit: "cover", boxShadow: solved ? "0 0 0 3px #538d4e, 0 8px 24px rgba(83,141,78,0.4)" : "0 8px 24px rgba(0,0,0,0.5)" }}
+                style={{ width: "100%", maxWidth: 200, aspectRatio: "2.5/3.5", objectFit: "cover", boxShadow: solved ? "0 0 0 3px #4faf68, 0 8px 24px rgba(79,175,104,0.4)" : "0 8px 24px rgba(0,0,0,0.5)" }}
               />
             )}
             <button
@@ -495,22 +501,19 @@ export function PaidleClient({ cards }: { cards: PaidleCard[] }) {
         )}
 
         {/* Legend */}
-        <div
-          className="rounded-xl p-4 text-xs space-y-2"
-          style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.06)" }}
-        >
-          <p className="font-semibold uppercase tracking-wide text-[10px]" style={{ color: "rgba(255,255,255,0.25)" }}>說明</p>
-          <div className="space-y-1.5" style={{ color: "rgba(255,255,255,0.45)" }}>
+        <div className="glass-panel rounded-xl p-4 text-xs space-y-2">
+          <p className="font-semibold uppercase tracking-wide text-[10px]" style={{ color: "rgba(245,200,66,0.5)" }}>說明</p>
+          <div className="space-y-1.5" style={{ color: "rgba(255,255,255,0.5)" }}>
             <div className="flex items-center gap-2">
-              <span className="inline-block w-4 h-4 rounded-sm flex-shrink-0" style={{ background: "#538d4e" }} />
+              <span className="inline-block w-4 h-4 rounded flex-shrink-0" style={{ background: "linear-gradient(160deg, #4faf68, #2e7d4a)", boxShadow: "inset 0 1px 0 rgba(255,255,255,0.15)" }} />
               <span>完全正確</span>
             </div>
             <div className="flex items-center gap-2">
-              <span className="inline-block w-4 h-4 rounded-sm flex-shrink-0" style={{ background: "#b59f3b" }} />
+              <span className="inline-block w-4 h-4 rounded flex-shrink-0" style={{ background: "linear-gradient(160deg, #d4ab2e, #a37d18)", boxShadow: "inset 0 1px 0 rgba(255,255,255,0.15)" }} />
               <span>數值有差距，↑ 答案更高，↓ 答案更低</span>
             </div>
             <div className="flex items-center gap-2">
-              <span className="inline-block w-4 h-4 rounded-sm flex-shrink-0" style={{ background: "#3a3a3c" }} />
+              <span className="inline-block w-4 h-4 rounded flex-shrink-0" style={{ background: "linear-gradient(160deg, #253751, #1a293f)", border: "1px solid rgba(255,255,255,0.1)" }} />
               <span>不正確</span>
             </div>
           </div>

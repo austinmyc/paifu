@@ -17,6 +17,8 @@ create table if not exists cards (
   collector_number text,
   name             text not null,
   stage            text,          -- 基礎 | 1階進化 | 2階進化 | null (trainer/energy)
+  card_type        text,          -- null (寶可夢) | 物品 | 支援者 | 競技場 | 寶可夢道具 | 基本能量 | 特殊能量
+                                  -- migration for existing DBs: alter table cards add column if not exists card_type text;
   evolves_from     text,          -- pre-evolution name, nullable
   dex_number       int,
   species          text,

@@ -59,6 +59,7 @@ def seed_file(path: str, client: Client) -> None:
             "collector_number": c.get("collector_number"),
             "name": c.get("name", ""),
             "stage": c.get("stage"),
+            "card_type": c.get("card_type"),
             "evolves_from": c.get("evolves_from"),
             "dex_number": c.get("dex_number"),
             "species": c.get("species"),

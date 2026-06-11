@@ -8,9 +8,12 @@ import { CollectionControls } from "@/components/collection-controls"
 
 const ENERGY_LABEL: Record<string, string> = {
   Grass: "草", Fire: "火", Water: "水", Lightning: "雷",
-  Psychic: "超", Fighting: "格", Darkness: "惡", Metal: "鋼",
-  Dragon: "龍", Colorless: "無",
+  Psychic: "超", Fighting: "鬥", Darkness: "惡", Metal: "鋼",
+  Dragon: "龍", Colorless: "普通",
 }
+
+// Attack costs keep the card-text convention: colorless cost is 無, not 普通
+const COST_LABEL: Record<string, string> = { ...ENERGY_LABEL, Colorless: "無" }
 
 export default async function CardPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
@@ -91,7 +94,7 @@ export default async function CardPage({ params }: { params: Promise<{ id: strin
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2">
                         <span className="text-xs text-muted-foreground">
-                          {atk.cost.map(c => ENERGY_LABEL[c] ?? c).join(" ")}
+                          {atk.cost.map(c => COST_LABEL[c] ?? c).join(" ")}
                         </span>
                         <span className="font-semibold">{atk.name}</span>
                       </div>
@@ -103,7 +106,8 @@ export default async function CardPage({ params }: { params: Promise<{ id: strin
               </div>
             )}
 
-            {/* Stats */}
+            {/* Stats — Pokémon only (trainers/energies have no retreat cost) */}
+            {card.stage && (
             <div className="grid grid-cols-3 gap-3 text-center text-sm">
               {card.weakness && (
                 <div className="border rounded-lg p-2">
@@ -130,6 +134,7 @@ export default async function CardPage({ params }: { params: Promise<{ id: strin
                 </div>
               )}
             </div>
+            )}
 
             {/* Pokédex info */}
             {card.dex_number && (
