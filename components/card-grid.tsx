@@ -14,6 +14,7 @@ export interface CardSummary {
   stage: string | null
   type: string | null
   collector_number: string
+  expansion_code: string | null
   image_url: string | null
   dex_number: number | null
 }
@@ -138,11 +139,12 @@ function EvoStrip({
 interface Props {
   cards: CardSummary[]
   isLoggedIn: boolean
+  showExpansion?: boolean
   onWantChange?: (cardId: string, want: boolean) => void
   onQtyChange?: (cardId: string, qty: number) => void
 }
 
-export function CardGrid({ cards, isLoggedIn, onWantChange, onQtyChange }: Props) {
+export function CardGrid({ cards, isLoggedIn, showExpansion = false, onWantChange, onQtyChange }: Props) {
   // qty + want maps keyed by card_id — always empty on server, populated client-side
   const [qtys, setQtys] = useState<Record<string, number>>({})
   const [wants, setWants] = useState<Record<string, boolean>>({})
@@ -306,7 +308,7 @@ export function CardGrid({ cards, isLoggedIn, onWantChange, onQtyChange }: Props
             <div className="p-1.5">
               <p className="text-xs font-medium truncate">{card.name}</p>
               <div className="flex items-center justify-between">
-                <p className="text-xs text-muted-foreground">{card.collector_number}</p>
+                <p className="text-xs text-muted-foreground">{showExpansion && card.expansion_code ? `${card.expansion_code} ` : ""}{card.collector_number}</p>
                 {isLoggedIn && (qtys[card.card_id] ?? 0) > 0 && (
                   <span
                     className="text-xs font-bold tabular-nums leading-none px-1.5 py-0.5 rounded-full"

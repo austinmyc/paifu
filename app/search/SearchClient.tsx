@@ -120,6 +120,7 @@ export function SearchClient({ expansions, regulations, isLoggedIn }: {
   const [query, setQuery] = useState("")
   const [filters, setFilters] = useState<Filters>(EMPTY_FILTERS)
   const [advancedOpen, setAdvancedOpen] = useState(false)
+  const [sort, setSort] = useState<"name" | "set">("set")
   const [results, setResults] = useState<CardSummary[] | null>(null)
   const [totalCount, setTotalCount] = useState(0)
   const [searching, setSearching] = useState(false)
@@ -141,7 +142,7 @@ export function SearchClient({ expansions, regulations, isLoggedIn }: {
       const supabase = createClient()
       let q = supabase
         .from("cards")
-        .select("card_id, name, stage, type, collector_number, image_url, dex_number", { count: "exact" })
+        .select("card_id, name, stage, type, collector_number, expansion_code, image_url, dex_number", { count: "exact" })
 
       const text = query.trim()
       if (text) q = q.ilike("name", `%${text}%`)
@@ -167,9 +168,13 @@ export function SearchClient({ expansions, regulations, isLoggedIn }: {
       if (filters.retreatMin) q = q.gte("retreat_cost", parseInt(filters.retreatMin))
       if (filters.retreatMax) q = q.lte("retreat_cost", parseInt(filters.retreatMax))
 
-      const { data, count } = await q
-        .order("card_id", { ascending: true })
-        .limit(RESULT_LIMIT)
+      if (sort === "name") {
+        q = q.order("name", { ascending: true })
+      } else {
+        q = q.order("expansion_code", { ascending: true }).order("collector_number", { ascending: true })
+      }
+
+      const { data, count } = await q.limit(RESULT_LIMIT)
 
       if (seq !== requestSeq.current) return // a newer search superseded this one
       setResults(
@@ -180,7 +185,7 @@ export function SearchClient({ expansions, regulations, isLoggedIn }: {
       setSearching(false)
     }, 350)
     return () => clearTimeout(timer)
-  }, [query, filters, hasCriteria])
+  }, [query, filters, sort, hasCriteria])
 
   return (
     <div>
@@ -405,11 +410,18 @@ export function SearchClient({ expansions, regulations, isLoggedIn }: {
             </div>
           ) : (
             <>
-              <p className="text-xs mb-3" style={{ color: "rgba(26,58,110,0.45)" }}>
-                找到 {totalCount} 張卡牌
-                {totalCount > RESULT_LIMIT && `（顯示前 ${RESULT_LIMIT} 張）`}
-              </p>
-              <CardGrid key={searchNonce} cards={results} isLoggedIn={isLoggedIn} />
+              <div className="flex items-center justify-between mb-3 gap-3 flex-wrap">
+                <p className="text-xs" style={{ color: "rgba(26,58,110,0.45)" }}>
+                  找到 {totalCount} 張卡牌
+                  {totalCount > RESULT_LIMIT && `（顯示前 ${RESULT_LIMIT} 張）`}
+                </p>
+                <div className="flex items-center gap-1">
+                  <span className="text-xs mr-1" style={{ color: "rgba(26,58,110,0.4)" }}>排序</span>
+                  <Chip active={sort === "set"} onClick={() => setSort("set")}>系列編號</Chip>
+                  <Chip active={sort === "name"} onClick={() => setSort("name")}>名稱</Chip>
+                </div>
+              </div>
+              <CardGrid key={searchNonce} cards={results} isLoggedIn={isLoggedIn} showExpansion />
             </>
           )
         )}
